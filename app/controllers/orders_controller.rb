@@ -1,6 +1,4 @@
 class OrdersController < ApplicationController
-  before_action :order_params
-
   def pickup
     add_order(0)
   end

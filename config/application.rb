@@ -31,5 +31,11 @@ module RoRElevatorServiceTechProposal
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    if defined?(Rails::Server)
+      config.after_initialize do
+        ElevatorHandlerJob.set(wait: 5.seconds).perform_later
+      end
+    end
   end
 end
