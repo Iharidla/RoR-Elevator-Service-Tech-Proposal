@@ -16,7 +16,6 @@ class OrdersController < ApplicationController
       if @order.save
         render json: @order
       else
-        binding.pry
         render json: @order.errors, status: 422
       end
     end
