@@ -5,16 +5,22 @@ class Elevator < ApplicationRecord
 
   before_save :auto_change_direction
 
+  scope :current_floor_orders, -> { where(floor: floor)}
+
+  def is_direction_up
+    direction == 'up'
+  end
+
   def change_direction
-    self.direction = self.direction == "up" ? 1 : 0
-    self.save
+    self.direction = is_direction_up ? 1 : 0
+    return true if save
   end
 
   private
     def auto_change_direction
-      if self.floor == 1
+      if floor == 1
         self.direction = 0
-      elsif self.floor == 10
+      elsif floor == 10
         self.direction = 1
       end
     end

@@ -1,4 +1,6 @@
 class OrdersController < ApplicationController
+  before_action :check_elevator
+
   def pickup
     add_order(0)
   end
@@ -14,7 +16,14 @@ class OrdersController < ApplicationController
       if @order.save
         render json: @order
       else
+        binding.pry
         render json: @order.errors, status: 422
+      end
+    end
+
+    def check_elevator
+      if Elevator.first.is_blocked
+        render json: 'Elevator is broken! Please restart it.', status: 422
       end
     end
 

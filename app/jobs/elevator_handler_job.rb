@@ -17,7 +17,9 @@ class ElevatorHandlerJob < ApplicationJob
     def check_current_floor
       current_floor_orders = Order.current_floor_orders(@elevator.floor)
 
-      Order.destroy(current_floor_orders.map(&:id)) if !current_floor_orders.empty?
+      if !current_floor_orders.empty?
+        emergency if !Order.destroy(current_floor_orders.map(&:id))
+      end
 
       check_dropoffs
     end
@@ -38,7 +40,7 @@ class ElevatorHandlerJob < ApplicationJob
       if !pickups.empty?
         next_floor
       else
-        @elevator.change_direction
+        emergency if !@elevator.change_direction
 
         check_dropoffs
       end
@@ -46,16 +48,29 @@ class ElevatorHandlerJob < ApplicationJob
 
     def next_floor
       @elevator.floor = is_direction_up ? @elevator.floor.next : @elevator.floor.pred
-      @elevator.save
 
-      puts "next floor #{@elevator.floor}"
-      sleep 3
-      puts 'arrived'
+      if @elevator.save
+        puts "next floor #{@elevator.floor}"
+        sleep 3
+        puts 'arrived'
 
-      check_current_floor
+        check_current_floor
+      else
+        emergency
+      end
     end
 
     def is_direction_up
-      @elevator.direction == 'up'
+      @elevator.is_direction_up
+    end
+
+    def emergency
+      @elevator.is_blocked = true
+
+      if @elevator.save
+        puts 'Elevator is broken. Try to survive and good luck...'.red
+      else
+        puts 'No one can help you'.red
+      end
     end
 end
